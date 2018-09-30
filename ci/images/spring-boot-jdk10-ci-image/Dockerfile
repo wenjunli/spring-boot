@@ -1,4 +1,4 @@
-FROM openjdk:10-ea-46-jdk
+FROM openjdk:10.0.2-13-jdk
 
 RUN apt-get update && \
     apt-get install -y git && \

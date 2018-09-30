@@ -82,17 +82,7 @@ public class BasicErrorController extends AbstractErrorController {
 		return this.errorProperties.getPath();
 	}
 
-	@RequestMapping(produces = { "application/xml", "text/xml", "application/json",
-			"application/*+xml", "application/*+json" })
-	public ResponseEntity<Map<String, Object>> errorStructured(
-			HttpServletRequest request) {
-		Map<String, Object> body = getErrorAttributes(request,
-				isIncludeStackTrace(request, MediaType.ALL));
-		HttpStatus status = getStatus(request);
-		return new ResponseEntity<>(body, status);
-	}
-
-	@RequestMapping(produces = "text/html")
+	@RequestMapping(produces = MediaType.TEXT_HTML_VALUE)
 	public ModelAndView errorHtml(HttpServletRequest request,
 			HttpServletResponse response) {
 		HttpStatus status = getStatus(request);
@@ -100,24 +90,15 @@ public class BasicErrorController extends AbstractErrorController {
 				request, isIncludeStackTrace(request, MediaType.TEXT_HTML)));
 		response.setStatus(status.value());
 		ModelAndView modelAndView = resolveErrorView(request, response, status, model);
-		return (modelAndView == null ? new ModelAndView("error", model) : modelAndView);
+		return (modelAndView != null) ? modelAndView : new ModelAndView("error", model);
 	}
 
 	@RequestMapping
-	public ResponseEntity<String> errorText(HttpServletRequest request) {
-		Map<String, Object> attributes = getErrorAttributes(request,
-				isIncludeStackTrace(request, MediaType.TEXT_PLAIN));
-		int padding = 0;
-		for (Map.Entry<String, Object> entry : attributes.entrySet()) {
-			padding = Math.max(padding, entry.getKey().length());
-		}
-		StringBuilder body = new StringBuilder();
-		for (Map.Entry<String, Object> entry : attributes.entrySet()) {
-			body.append(String.format("%-" + padding + "s : %s%n", entry.getKey(),
-					entry.getValue()));
-		}
+	public ResponseEntity<Map<String, Object>> error(HttpServletRequest request) {
+		Map<String, Object> body = getErrorAttributes(request,
+				isIncludeStackTrace(request, MediaType.ALL));
 		HttpStatus status = getStatus(request);
-		return new ResponseEntity<>(body.toString(), status);
+		return new ResponseEntity<>(body, status);
 	}
 
 	/**
